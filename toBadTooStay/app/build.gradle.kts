@@ -6,9 +6,7 @@ plugins {
 android {
     namespace = "edu.ap.tobadtoostay"
     compileSdk {
-        version = release(37) {
-            minorApiLevel = 1
-        }
+        version = release(37)
     }
 
     defaultConfig {
