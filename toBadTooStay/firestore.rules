@@ -1,0 +1,86 @@
+rules_version = '2';
+
+// Firestore security rules for To Bad Too Stay.
+// Copy of the rules published in the Firebase console (Firestore Database > Rules).
+// Convention: stores/{storeId} uses the merchant's uid as storeId (one store per merchant).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isMerchant() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'merchant';
+    }
+
+    function changedOnly(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    // users/{uid}: every logged-in user can read, only the owner can write their own profile
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create: if isUser(uid)
+        && request.resource.data.role in ['customer', 'merchant']
+        && request.resource.data.email == request.auth.token.email;
+      allow update: if isUser(uid)
+        && request.resource.data.role == resource.data.role; // role cannot change
+      allow delete: if false;
+    }
+
+    // stores/{storeId}: storeId == uid of the merchant
+    match /stores/{storeId} {
+      allow read: if signedIn();
+      allow create, update: if isUser(storeId) && isMerchant()
+        && request.resource.data.ownerId == request.auth.uid;
+      allow delete: if isUser(storeId);
+    }
+
+    // bags/{bagId}
+    match /bags/{bagId} {
+      allow read: if signedIn();
+      allow create: if isMerchant()
+        && request.resource.data.storeId == request.auth.uid;
+      // merchant edits or takes their own bag offline (H7)
+      allow update: if signedIn()
+        && resource.data.storeId == request.auth.uid
+        && request.resource.data.storeId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.storeId == request.auth.uid;
+      // customer reserves or cancels: only quantityLeft may change, within bounds (K8, K11)
+      allow update: if signedIn()
+        && changedOnly(['quantityLeft'])
+        && request.resource.data.quantityLeft >= 0
+        && request.resource.data.quantityLeft <= resource.data.quantityTotal;
+    }
+
+    // reservations/{reservationId}
+    match /reservations/{reservationId} {
+      allow read: if signedIn()
+        && (resource.data.customerId == request.auth.uid
+            || resource.data.storeId == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.status == 'reserved'
+        && request.resource.data.quantity > 0;
+      // customer cancels (K11)
+      allow update: if signedIn()
+        && resource.data.customerId == request.auth.uid
+        && resource.data.status == 'reserved'
+        && changedOnly(['status'])
+        && request.resource.data.status == 'cancelled';
+      // merchant marks as collected (H6)
+      allow update: if signedIn()
+        && resource.data.storeId == request.auth.uid
+        && resource.data.status == 'reserved'
+        && changedOnly(['status'])
+        && request.resource.data.status == 'collected';
+      allow delete: if false;
+    }
+  }
+}
