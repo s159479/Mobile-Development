@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "193695812120",
+    "project_id": "tobadtoostay",
+    "storage_bucket": "tobadtoostay.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:193695812120:android:5cff69304c6f8673f0916d",
+        "android_client_info": {
+          "package_name": "edu.ap.tobadtoostay"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBApAn1fe3mbDmEutb4jCtwOGsSdbKc5Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
