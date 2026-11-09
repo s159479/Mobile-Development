@@ -24,6 +24,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -194,7 +195,10 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                                 .await()
 
                             // 3. go to the main screen
-                            context.startActivity(Intent(context, MainActivity::class.java))
+                            // remove login and register from the back stack
+                            val intent = Intent(context, MainActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            context.startActivity(intent)
                         } catch (e: FirebaseAuthUserCollisionException) {
                             emailError = "Dit e-mailadres bestaat al"
                         } catch (e: FirebaseNetworkException) {
@@ -224,6 +228,13 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             } else {
                 Text("Registreren")
             }
+        }
+
+        TextButton(
+            onClick = { (context as ComponentActivity).finish() },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Al een account? Inloggen")
         }
     }
 }
