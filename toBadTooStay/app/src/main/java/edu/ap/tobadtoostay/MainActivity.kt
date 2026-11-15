@@ -12,16 +12,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestoreException
+import edu.ap.tobadtoostay.data.repository.UserRepository
+import edu.ap.tobadtoostay.ui.location.LocationCard
 import edu.ap.tobadtoostay.ui.theme.ToBadTooStayTheme
 
 class MainActivity : ComponentActivity() {
@@ -42,10 +49,19 @@ class MainActivity : ComponentActivity() {
 fun HomeScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
+    // Only customers look for packages nearby, merchants don't need the location
+    val role by produceState<String?>(initialValue = null) {
+        value = try {
+            UserRepository().getMyRole()
+        } catch (e: FirebaseFirestoreException) {
+            null // offline and not in the cache: the card shows up once the role is known
+        }
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.Center
     ) {
@@ -57,12 +73,18 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         Text(text = "Ingelogd als $email")
         Spacer(modifier = Modifier.height(24.dp))
 
+        if (role == UserRepository.ROLE_CUSTOMER) {
+            LocationCard()
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
         Button(
             onClick = { context.startActivity(Intent(context, MyStoreActivity::class.java)) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.my_store))
         }
+        Spacer(modifier = Modifier.height(8.dp))
 
         Button(
             onClick = {
