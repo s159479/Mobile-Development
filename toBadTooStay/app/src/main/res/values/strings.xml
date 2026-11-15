@@ -1,3 +1,46 @@
 <resources>
     <string name="app_name">to Bad Too Stay</string>
+
+    <!-- General -->
+    <string name="error_no_internet">Geen internetverbinding</string>
+
+    <!-- My store (H1, H2) -->
+    <string name="my_store">Mijn winkel</string>
+    <string name="store_title_new">Winkel aanmaken</string>
+    <string name="store_title_edit">Mijn winkel</string>
+    <string name="store_name">Naam van de winkel</string>
+    <string name="store_category">Categorie</string>
+    <string name="store_location">Locatie</string>
+    <string name="store_location_hint">Tik op de kaart om de locatie van je winkel aan te duiden.</string>
+    <string name="store_address">Adres</string>
+    <string name="store_address_hint">Wordt automatisch ingevuld, maar je kan het nog aanpassen.</string>
+    <string name="store_street">Straat en huisnummer</string>
+    <string name="store_postal_code">Postcode</string>
+    <string name="store_city">Gemeente</string>
+    <string name="store_looking_up_address">Adres opzoeken…</string>
+    <string name="store_save_new">Winkel aanmaken</string>
+    <string name="store_save_edit">Wijzigingen opslaan</string>
+    <string name="store_marker_title">Mijn winkel</string>
+
+    <string name="store_saved">Winkel opgeslagen</string>
+    <string name="store_saved_offline">Geen verbinding: je winkel wordt opgeslagen zodra je weer online bent</string>
+    <string name="store_address_not_found">Geen adres gevonden op deze plek, vul het zelf in</string>
+    <string name="store_address_lookup_failed">Adres kon niet automatisch opgehaald worden, vul het zelf in</string>
+    <string name="store_error_name">Naam is verplicht</string>
+    <string name="store_error_category">Kies een categorie</string>
+    <string name="store_error_pin">Duid de locatie aan op de kaart</string>
+    <string name="store_error_street">Straat en huisnummer zijn verplicht</string>
+    <string name="store_error_postal_code">Postcode moet uit 4 cijfers bestaan</string>
+    <string name="store_error_city">Gemeente is verplicht</string>
+    <string name="store_error_permission">Je hebt geen toestemming om een winkel te beheren. Ben je geregistreerd als handelaar?</string>
+    <string name="store_error_generic">Er ging iets mis, probeer opnieuw</string>
+
+    <!-- Store categories -->
+    <string name="category_bakery">Bakker</string>
+    <string name="category_supermarket">Supermarkt</string>
+    <string name="category_restaurant">Restaurant</string>
+    <string name="category_cafe">Café</string>
+    <string name="category_butcher">Slager</string>
+    <string name="category_greengrocer">Groenteboer</string>
+    <string name="category_other">Andere</string>
 </resources>
