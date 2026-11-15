@@ -1,0 +1,3 @@
+# IDE settings (Android Studio / IntelliJ) are per developer, never commit them
+.idea/
+*.iml
