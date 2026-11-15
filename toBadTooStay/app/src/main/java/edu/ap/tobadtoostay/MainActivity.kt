@@ -25,10 +25,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestoreException
 import edu.ap.tobadtoostay.data.repository.UserRepository
 import edu.ap.tobadtoostay.ui.location.LocationCard
+import edu.ap.tobadtoostay.ui.location.LocationUiState
+import edu.ap.tobadtoostay.ui.location.LocationViewModel
+import edu.ap.tobadtoostay.ui.nearby.NearbyBagsSummary
 import edu.ap.tobadtoostay.ui.theme.ToBadTooStayTheme
 
 class MainActivity : ComponentActivity() {
@@ -74,8 +79,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(24.dp))
 
         if (role == UserRepository.ROLE_CUSTOMER) {
-            LocationCard()
-            Spacer(modifier = Modifier.height(16.dp))
+            CustomerSection()
         }
 
         Button(
@@ -99,5 +103,21 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         ) {
             Text("Uitloggen")
         }
+    }
+}
+
+/** Location and the packages nearby, only for customers. */
+@Composable
+private fun CustomerSection(locationViewModel: LocationViewModel = viewModel()) {
+    // Same ViewModel instance as the one inside LocationCard
+    val location by locationViewModel.uiState.collectAsStateWithLifecycle()
+
+    LocationCard(viewModel = locationViewModel)
+    Spacer(modifier = Modifier.height(16.dp))
+
+    val found = location as? LocationUiState.Found
+    if (found != null) {
+        NearbyBagsSummary(location = found.point)
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }

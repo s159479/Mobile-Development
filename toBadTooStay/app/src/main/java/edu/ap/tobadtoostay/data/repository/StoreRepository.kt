@@ -1,8 +1,11 @@
 package edu.ap.tobadtoostay.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
+import edu.ap.tobadtoostay.data.location.GeoMath
+import edu.ap.tobadtoostay.data.model.MapPoint
 import edu.ap.tobadtoostay.data.model.Store
 import kotlinx.coroutines.tasks.await
 
@@ -22,19 +25,26 @@ class StoreRepository(
         val uid = currentUid()
         val doc = stores.document(uid).get().await()
         if (!doc.exists()) return null
+        return doc.toStore()
+    }
 
-        val location = doc.getGeoPoint("location")
-        return Store(
-            id = doc.id,
-            ownerId = doc.getString("ownerId").orEmpty(),
-            name = doc.getString("name").orEmpty(),
-            category = doc.getString("category").orEmpty(),
-            latitude = location?.latitude ?: 0.0,
-            longitude = location?.longitude ?: 0.0,
-            street = doc.getString("street").orEmpty(),
-            postalCode = doc.getString("postalCode").orEmpty(),
-            city = doc.getString("city").orEmpty()
-        )
+    /**
+     * Stores within [radiusMeters] of [center].
+     * Firestore can't search on distance, so we ask the stores in a band of latitudes
+     * (GeoPoints are sorted on latitude first) and check the real distance here.
+     */
+    suspend fun getStoresNear(center: MapPoint, radiusMeters: Double): List<Store> {
+        val latitudes = GeoMath.latitudeRange(center, radiusMeters)
+        val docs = stores
+            .whereGreaterThanOrEqualTo("location", GeoPoint(latitudes.start, -180.0))
+            .whereLessThanOrEqualTo("location", GeoPoint(latitudes.endInclusive, 180.0))
+            .get()
+            .await()
+
+        return docs.documents
+            .filter { it.getGeoPoint("location") != null }
+            .map { it.toStore() }
+            .filter { GeoMath.distanceMeters(center, MapPoint(it.latitude, it.longitude)) <= radiusMeters }
     }
 
     /** Creates or updates the store of the logged-in merchant. */
@@ -52,5 +62,20 @@ class StoreRepository(
             "postalCode" to store.postalCode
         )
         stores.document(uid).set(data).await()
+    }
+
+    private fun DocumentSnapshot.toStore(): Store {
+        val location = getGeoPoint("location")
+        return Store(
+            id = id,
+            ownerId = getString("ownerId").orEmpty(),
+            name = getString("name").orEmpty(),
+            category = getString("category").orEmpty(),
+            latitude = location?.latitude ?: 0.0,
+            longitude = location?.longitude ?: 0.0,
+            street = getString("street").orEmpty(),
+            postalCode = getString("postalCode").orEmpty(),
+            city = getString("city").orEmpty()
+        )
     }
 }
