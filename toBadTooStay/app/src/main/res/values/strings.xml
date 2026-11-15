@@ -4,6 +4,20 @@
     <!-- General -->
     <string name="error_no_internet">Geen internetverbinding</string>
 
+    <!-- Location permission -->
+    <string name="location_title">Jouw locatie</string>
+    <string name="location_rationale">We gebruiken je locatie om pakketten in je buurt te tonen. Je locatie wordt niet opgeslagen.</string>
+    <string name="location_allow">Locatie toestaan</string>
+    <string name="location_permanently_denied">Je hebt locatie geweigerd. Je kan het nog aanzetten in de instellingen van de app (Machtigingen &gt; Locatie).</string>
+    <string name="location_open_settings">Naar instellingen</string>
+    <string name="location_off">Locatie staat uit op je toestel.</string>
+    <string name="location_turn_on">Locatie aanzetten</string>
+    <string name="location_loading">Locatie zoeken…</string>
+    <string name="location_found">Locatie gevonden.</string>
+    <string name="location_approximate">Je deelt enkel je locatie bij benadering. Afstanden tot winkels zijn dan minder nauwkeurig.</string>
+    <string name="location_not_found">Je locatie kon niet bepaald worden.</string>
+    <string name="location_retry">Opnieuw proberen</string>
+
     <!-- My store (H1, H2) -->
     <string name="my_store">Mijn winkel</string>
     <string name="store_title_new">Winkel aanmaken</string>

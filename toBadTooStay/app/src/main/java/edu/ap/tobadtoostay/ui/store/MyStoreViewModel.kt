@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestoreException
 import edu.ap.tobadtoostay.R
 import edu.ap.tobadtoostay.data.local.AppDatabase
+import edu.ap.tobadtoostay.data.model.MapPoint
 import edu.ap.tobadtoostay.data.model.Store
 import edu.ap.tobadtoostay.data.model.StoreCategory
 import edu.ap.tobadtoostay.data.remote.NominatimApi
@@ -20,8 +21,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.IOException
-
-data class MapPoint(val latitude: Double, val longitude: Double)
 
 data class MyStoreUiState(
     val isLoading: Boolean = true,
