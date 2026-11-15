@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+# IDE settings are per developer
+/.idea/
