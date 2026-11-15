@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
 import edu.ap.tobadtoostay.ui.theme.ToBadTooStayTheme
@@ -55,6 +56,13 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         )
         Text(text = "Ingelogd als $email")
         Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = { context.startActivity(Intent(context, MyStoreActivity::class.java)) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.my_store))
+        }
 
         Button(
             onClick = {

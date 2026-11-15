@@ -13,7 +13,7 @@ import edu.ap.tobadtoostay.data.local.entity.FavoriteStore
 
 @Database(
     entities = [FavoriteStore::class, CachedReservation::class, CachedAddress::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
