@@ -4,12 +4,18 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.util.Locale
 
-/** Cached Nominatim reverse geocoding result, so we don't ask the same location twice. */
+/**
+ * Cached Nominatim reverse geocoding result, so we don't ask the same location twice.
+ * road, houseNumber and postcode are extra fields, so the store form (H2) can be filled from the cache.
+ */
 @Entity(tableName = "cached_addresses")
 data class CachedAddress(
     @PrimaryKey val key: String,
     val displayName: String,
     val city: String,
+    val road: String = "",
+    val houseNumber: String = "",
+    val postcode: String = "",
     val fetchedAt: Long = System.currentTimeMillis()
 ) {
     companion object {
