@@ -18,6 +18,17 @@
     <string name="location_not_found">Je locatie kon niet bepaald worden.</string>
     <string name="location_retry">Opnieuw proberen</string>
 
+    <!-- Packages nearby -->
+    <string name="nearby_title">Pakketten in de buurt</string>
+    <string name="nearby_loading">Pakketten zoeken…</string>
+    <string name="nearby_empty">Geen pakketten binnen %1$d km.</string>
+    <plurals name="nearby_count">
+        <item quantity="one">%1$d pakket binnen %2$d km</item>
+        <item quantity="other">%1$d pakketten binnen %2$d km</item>
+    </plurals>
+    <string name="nearby_closest">Dichtstbij: %1$s (%2$s)</string>
+    <string name="nearby_error">Pakketten konden niet geladen worden, probeer opnieuw</string>
+
     <!-- My store (H1, H2) -->
     <string name="my_store">Mijn winkel</string>
     <string name="store_title_new">Winkel aanmaken</string>
