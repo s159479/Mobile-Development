@@ -20,10 +20,14 @@ import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import java.io.File
 
+/** An extra marker on the map, for example one per store. The [id] is given back when it is tapped. */
+data class MapMarker(val id: String, val position: GeoPoint, val title: String)
+
 /**
  * OSMDroid map for Compose.
  * The map only moves when [center] changes, a [marker] is drawn on its own position,
  * and [onTap] is called with the coordinates of a single tap.
+ * [markers] are extra markers (one per store); [onMarkerClick] is called with the id of the tapped one.
  */
 @Composable
 fun OsmMap(
@@ -32,11 +36,15 @@ fun OsmMap(
     zoom: Double = 15.0,
     marker: GeoPoint? = null,
     markerTitle: String? = null,
-    onTap: ((GeoPoint) -> Unit)? = null
+    onTap: ((GeoPoint) -> Unit)? = null,
+    markers: List<MapMarker> = emptyList(),
+    onMarkerClick: ((String) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentOnTap = rememberUpdatedState(onTap)
+    val currentOnMarkerClick = rememberUpdatedState(onMarkerClick)
+    val extraMarkers = remember { mutableListOf<Marker>() }
 
     val mapView = remember {
         configureOsmdroid(context)
@@ -95,6 +103,23 @@ fun OsmMap(
                 pinMarker.title = markerTitle
                 map.overlays.add(pinMarker)
             }
+            // Redraw the extra markers (one per store)
+            extraMarkers.forEach { map.overlays.remove(it) }
+            extraMarkers.clear()
+            markers.forEach { item ->
+                val extra = Marker(map)
+                extra.position = item.position
+                extra.title = item.title
+                extra.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                extra.setOnMarkerClickListener { clicked, _ ->
+                    clicked.showInfoWindow()
+                    currentOnMarkerClick.value?.invoke(item.id)
+                    true
+                }
+                map.overlays.add(extra)
+                extraMarkers.add(extra)
+            }
+
             map.invalidate()
         }
     )

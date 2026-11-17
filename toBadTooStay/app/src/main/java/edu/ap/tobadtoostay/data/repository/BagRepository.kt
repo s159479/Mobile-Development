@@ -2,6 +2,11 @@ package edu.ap.tobadtoostay.data.repository
 
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.snapshots
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import edu.ap.tobadtoostay.data.model.Bag
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -29,6 +34,23 @@ class BagRepository(
                 .awaitAll()
                 .flatMap { snapshot -> snapshot.documents.map { it.toBag() } }
         }
+    }
+
+    /**
+     * Same bags as [getBagsForStores], but as a Flow that sends a new list every time
+     * something changes in Firestore (for example when someone reserves the last bag).
+     */
+    fun observeBagsForStores(storeIds: Collection<String>): Flow<List<Bag>> {
+        if (storeIds.isEmpty()) return flowOf(emptyList())
+
+        val flows = storeIds.distinct()
+            .chunked(MAX_WHERE_IN)
+            .map { ids ->
+                bags.whereIn(STORE_ID, ids).snapshots().map { snapshot ->
+                    snapshot.documents.map { it.toBag() }
+                }
+            }
+        return combine(flows) { lists -> lists.toList().flatten() }
     }
 
     private fun DocumentSnapshot.toBag() = Bag(

@@ -29,6 +29,55 @@
     <string name="nearby_closest">Dichtstbij: %1$s (%2$s)</string>
     <string name="nearby_error">Pakketten konden niet geladen worden, probeer opnieuw</string>
 
+    <!-- Login and register (A1, A2, A3) -->
+    <string name="login_title">Inloggen</string>
+    <string name="register_title">Account maken</string>
+    <string name="field_name">Naam</string>
+    <string name="field_email">E-mail</string>
+    <string name="field_password">Wachtwoord</string>
+    <string name="password_hint">Minstens 6 tekens, met hoofdletter, kleine letter, cijfer en speciaal teken</string>
+    <string name="role_customer">Ik ben een klant</string>
+    <string name="role_merchant">Ik ben een handelaar</string>
+    <string name="button_login">Inloggen</string>
+    <string name="button_register">Registreren</string>
+    <string name="link_to_register">Nog geen account? Registreren</string>
+    <string name="link_to_login">Al een account? Inloggen</string>
+    <string name="welcome">Welkom</string>
+    <string name="logged_in_as">Ingelogd als %1$s</string>
+    <string name="error_name_required">Naam is verplicht</string>
+    <string name="error_email_invalid">Dit is geen geldig e-mailadres</string>
+    <string name="error_email_in_use">Dit e-mailadres bestaat al</string>
+    <string name="error_password_required">Wachtwoord is verplicht</string>
+    <string name="error_password_short">Wachtwoord moet minstens 6 tekens hebben</string>
+    <string name="error_password_upper">Wachtwoord moet een hoofdletter bevatten</string>
+    <string name="error_password_lower">Wachtwoord moet kleine letters bevatten</string>
+    <string name="error_password_digit">Wachtwoord moet een cijfer bevatten</string>
+    <string name="error_password_special">Wachtwoord moet een speciaal teken bevatten</string>
+    <string name="error_login_wrong">E-mail of wachtwoord is fout</string>
+    <string name="error_login_failed">Inloggen mislukt, probeer opnieuw</string>
+    <string name="error_register_failed">Registreren mislukt, probeer opnieuw</string>
+
+    <!-- Customer tabs and list/map (K3, K4) -->
+    <string name="tab_discover">Ontdekken</string>
+    <string name="tab_map">Kaart</string>
+    <string name="tab_orders">Bestellingen</string>
+    <string name="tab_favorites">Favorieten</string>
+    <string name="logout">Uitloggen</string>
+    <string name="back">Terug</string>
+    <string name="role_error">Je profiel kon niet geladen worden.</string>
+    <string name="coming_soon">Dit scherm komt binnenkort.</string>
+    <string name="bag_price">€ %1$.2f</string>
+    <string name="bag_left">%1$d over</string>
+    <string name="bag_pickup">Ophalen: %1$s – %2$s</string>
+    <string name="bag_distance">%1$.1f km</string>
+    <string name="map_your_location">Jouw locatie</string>
+    <string name="map_view_bag">Bekijk</string>
+    <plurals name="map_bags_in_store">
+        <item quantity="one">%1$d pakket beschikbaar</item>
+        <item quantity="other">%1$d pakketten beschikbaar</item>
+    </plurals>
+    <string name="map_tap_marker">Tik op een marker om de winkel te zien.</string>
+
     <!-- My store (H1, H2) -->
     <string name="my_store">Mijn winkel</string>
     <string name="store_title_new">Winkel aanmaken</string>

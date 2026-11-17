@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,25 +16,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestoreException
-import edu.ap.tobadtoostay.data.repository.UserRepository
-import edu.ap.tobadtoostay.ui.location.LocationCard
-import edu.ap.tobadtoostay.ui.location.LocationUiState
-import edu.ap.tobadtoostay.ui.location.LocationViewModel
-import edu.ap.tobadtoostay.ui.nearby.NearbyBagsSummary
+import edu.ap.tobadtoostay.ui.customer.CustomerScreen
 import edu.ap.tobadtoostay.ui.theme.ToBadTooStayTheme
 
 class MainActivity : ComponentActivity() {
@@ -50,74 +47,86 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/** Start screen: first the role is loaded, then a customer or a merchant gets their own screen (A2). */
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = viewModel()
+) {
     val context = LocalContext.current
-    val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
-    // Only customers look for packages nearby, merchants don't need the location
-    val role by produceState<String?>(initialValue = null) {
-        value = try {
-            UserRepository().getMyRole()
-        } catch (e: FirebaseFirestoreException) {
-            null // offline and not in the cache: the card shows up once the role is known
-        }
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Back to the login screen and remove the other screens from the back stack
+    val logout = {
+        viewModel.logout()
+        val intent = Intent(context, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        context.startActivity(intent)
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Welkom",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Text(text = "Ingelogd als $email")
-        Spacer(modifier = Modifier.height(24.dp))
-
-        if (role == UserRepository.ROLE_CUSTOMER) {
-            CustomerSection()
+    when (val current = state) {
+        HomeUiState.Loading -> {
+            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
         }
 
-        Button(
-            onClick = { context.startActivity(Intent(context, MyStoreActivity::class.java)) },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.my_store))
+        HomeUiState.Failed -> {
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.role_error),
+                    color = MaterialTheme.colorScheme.error
+                )
+                OutlinedButton(
+                    onClick = viewModel::loadRole,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text(stringResource(R.string.location_retry))
+                }
+            }
         }
-        Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            onClick = {
-                FirebaseAuth.getInstance().signOut()
+        // Customers get their own screen with tabs (Ontdekken, Kaart, Bestellingen, Favorieten)
+        HomeUiState.Customer -> CustomerScreen(onLogout = logout)
 
-                // Back to the login screen and remove the other screens from the back stack
-                val intent = Intent(context, LoginActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                context.startActivity(intent)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Uitloggen")
+        is HomeUiState.Merchant -> {
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.welcome),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(text = stringResource(R.string.logged_in_as, current.email))
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = { context.startActivity(Intent(context, MyStoreActivity::class.java)) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.my_store))
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = logout,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.logout))
+                }
+            }
         }
-    }
-}
-
-/** Location and the packages nearby, only for customers. */
-@Composable
-private fun CustomerSection(locationViewModel: LocationViewModel = viewModel()) {
-    // Same ViewModel instance as the one inside LocationCard
-    val location by locationViewModel.uiState.collectAsStateWithLifecycle()
-
-    LocationCard(viewModel = locationViewModel)
-    Spacer(modifier = Modifier.height(16.dp))
-
-    val found = location as? LocationUiState.Found
-    if (found != null) {
-        NearbyBagsSummary(location = found.point)
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
