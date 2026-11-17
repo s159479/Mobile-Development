@@ -2,7 +2,6 @@ package edu.ap.tobadtoostay
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Patterns
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,22 +23,20 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.google.firebase.FirebaseNetworkException
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import edu.ap.tobadtoostay.ui.theme.ToBadTooStayTheme
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,17 +61,24 @@ class LoginActivity : ComponentActivity() {
 }
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    viewModel: LoginViewModel = viewModel()
+) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    // rememberSaveable keeps what the user typed when the screen is rotated
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
 
-    var emailError by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
-    var generalError by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+    // Go to the main screen as soon as the login worked
+    LaunchedEffect(state.isLoggedIn) {
+        if (state.isLoggedIn) {
+            context.startActivity(Intent(context, MainActivity::class.java))
+            (context as ComponentActivity).finish()
+        }
+    }
 
     Column(
         modifier = modifier
@@ -84,7 +88,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Inloggen",
+            text = stringResource(R.string.login_title),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -93,9 +97,9 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("E-mail") },
-            isError = emailError != "",
-            supportingText = { if (emailError != "") Text(emailError) },
+            label = { Text(stringResource(R.string.field_email)) },
+            isError = state.emailError != null,
+            supportingText = { state.emailError?.let { Text(stringResource(it)) } },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -103,69 +107,35 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Wachtwoord") },
+            label = { Text(stringResource(R.string.field_password)) },
             visualTransformation = PasswordVisualTransformation(),
-            isError = passwordError != "",
-            supportingText = { if (passwordError != "") Text(passwordError) },
+            isError = state.passwordError != null,
+            supportingText = { state.passwordError?.let { Text(stringResource(it)) } },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
-        if (generalError != "") {
+        state.generalError?.let {
             Text(
-                text = generalError,
+                text = stringResource(it),
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         }
 
         Button(
-            onClick = {
-                emailError = ""
-                passwordError = ""
-                generalError = ""
-
-                if (!Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
-                    emailError = "Dit is geen geldig e-mailadres"
-                }
-                if (password == "") {
-                    passwordError = "Wachtwoord is verplicht"
-                }
-
-                if (emailError == "" && passwordError == "") {
-                    isLoading = true
-                    scope.launch {
-                        try {
-                            FirebaseAuth.getInstance()
-                                .signInWithEmailAndPassword(email.trim().lowercase(), password)
-                                .await()
-
-                            context.startActivity(Intent(context, MainActivity::class.java))
-                            (context as ComponentActivity).finish()
-                        } catch (e: FirebaseAuthInvalidUserException) {
-                            generalError = "E-mail of wachtwoord is fout"
-                        } catch (e: FirebaseAuthInvalidCredentialsException) {
-                            generalError = "E-mail of wachtwoord is fout"
-                        } catch (e: FirebaseNetworkException) {
-                            generalError = "Geen internetverbinding"
-                        } catch (e: Exception) {
-                            generalError = "Inloggen mislukt: ${e.message}"
-                        }
-                        isLoading = false
-                    }
-                }
-            },
-            enabled = !isLoading,
+            onClick = { viewModel.login(email, password) },
+            enabled = !state.isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (isLoading) {
+            if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     strokeWidth = 2.dp,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Inloggen")
+                Text(stringResource(R.string.button_login))
             }
         }
 
@@ -173,7 +143,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
             onClick = { context.startActivity(Intent(context, RegisterActivity::class.java)) },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Nog geen account? Registreren")
+            Text(stringResource(R.string.link_to_register))
         }
     }
 }

@@ -2,7 +2,6 @@ package edu.ap.tobadtoostay
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Patterns
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,24 +25,21 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.firestore.FirebaseFirestore
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import edu.ap.tobadtoostay.ui.BackArrow
 import edu.ap.tobadtoostay.ui.theme.ToBadTooStayTheme
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class RegisterActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +48,10 @@ class RegisterActivity : ComponentActivity() {
         setContent {
             ToBadTooStayTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    RegisterScreen(modifier = Modifier.padding(innerPadding))
+                    Column(modifier = Modifier.padding(innerPadding)) {
+                        BackArrow(onClick = { finish() })
+                        RegisterScreen(modifier = Modifier.weight(1f))
+                    }
                 }
             }
         }
@@ -60,20 +59,28 @@ class RegisterActivity : ComponentActivity() {
 }
 
 @Composable
-fun RegisterScreen(modifier: Modifier = Modifier) {
+fun RegisterScreen(
+    modifier: Modifier = Modifier,
+    viewModel: RegisterViewModel = viewModel()
+) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var isMerchant by remember { mutableStateOf(false) }
+    // rememberSaveable keeps what the user typed when the screen is rotated
+    var name by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var isMerchant by rememberSaveable { mutableStateOf(false) }
 
-    var nameError by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
-    var generalError by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+    // Go to the main screen as soon as the registration worked
+    LaunchedEffect(state.isRegistered) {
+        if (state.isRegistered) {
+            // remove login and register from the back stack
+            val intent = Intent(context, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            context.startActivity(intent)
+        }
+    }
 
     Column(
         modifier = modifier
@@ -83,7 +90,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Account maken",
+            text = stringResource(R.string.register_title),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -92,9 +99,9 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Naam") },
-            isError = nameError != "",
-            supportingText = { if (nameError != "") Text(nameError) },
+            label = { Text(stringResource(R.string.field_name)) },
+            isError = state.nameError != null,
+            supportingText = { state.nameError?.let { Text(stringResource(it)) } },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -102,9 +109,9 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("E-mail") },
-            isError = emailError != "",
-            supportingText = { if (emailError != "") Text(emailError) },
+            label = { Text(stringResource(R.string.field_email)) },
+            isError = state.emailError != null,
+            supportingText = { state.emailError?.let { Text(stringResource(it)) } },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -112,15 +119,11 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Wachtwoord") },
+            label = { Text(stringResource(R.string.field_password)) },
             visualTransformation = PasswordVisualTransformation(),
-            isError = passwordError != "",
+            isError = state.passwordError != null,
             supportingText = {
-                if (passwordError != "") {
-                    Text(passwordError)
-                } else {
-                    Text("Minstens 6 tekens, met hoofdletter, kleine letter, cijfer en speciaal teken")
-                }
+                Text(stringResource(state.passwordError ?: R.string.password_hint))
             },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
@@ -132,101 +135,32 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
         ) {
             Switch(checked = isMerchant, onCheckedChange = { isMerchant = it })
             Text(
-                text = if (isMerchant) "Ik ben een handelaar" else "Ik ben een klant",
+                text = stringResource(if (isMerchant) R.string.role_merchant else R.string.role_customer),
                 modifier = Modifier.padding(start = 12.dp)
             )
         }
 
-        if (generalError != "") {
+        state.generalError?.let {
             Text(
-                text = generalError,
+                text = stringResource(it),
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         }
 
         Button(
-            onClick = {
-                // Check the input first
-                nameError = ""
-                emailError = ""
-                passwordError = ""
-                generalError = ""
-
-                if (name.isBlank()) {
-                    nameError = "Naam is verplicht"
-                }
-                if (!Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
-                    emailError = "Dit is geen geldig e-mailadres"
-                }
-                if (password.length < 6) {
-                    passwordError = "Wachtwoord moet minstens 6 tekens hebben"
-                } else if (!password.any { it.isUpperCase() }) {
-                    passwordError = "Wachtwoord moet een hoofdletter bevatten"
-                } else if (!password.any { it.isLowerCase() }) {
-                    passwordError = "Wachtwoord moet kleine letters bevatten"
-                } else if (!password.any { it.isDigit() }) {
-                    passwordError = "Wachtwoord moet een cijfer bevatten"
-                } else if (password.all { it.isLetterOrDigit() }) {
-                    passwordError = "Wachtwoord moet een speciaal teken bevatten"
-                }
-
-                if (nameError == "" && emailError == "" && passwordError == "") {
-                    isLoading = true
-                    scope.launch {
-                        try {
-                            // 1. make the account in Firebase Authentication
-                            val result = FirebaseAuth.getInstance()
-                                .createUserWithEmailAndPassword(email.trim().lowercase(), password)
-                                .await()
-                            val uid = result.user!!.uid
-
-                            // 2. save name and role in Firestore (users/{uid})
-                            val role = if (isMerchant) "merchant" else "customer"
-                            val user = hashMapOf(
-                                "name" to name.trim(),
-                                "email" to email.trim().lowercase(),
-                                "role" to role
-                            )
-                            FirebaseFirestore.getInstance()
-                                .collection("users")
-                                .document(uid)
-                                .set(user)
-                                .await()
-
-                            // 3. go to the main screen
-                            // remove login and register from the back stack
-                            val intent = Intent(context, MainActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            context.startActivity(intent)
-                        } catch (e: FirebaseAuthUserCollisionException) {
-                            emailError = "Dit e-mailadres bestaat al"
-                        } catch (e: FirebaseNetworkException) {
-                            generalError = "Geen internetverbinding"
-                        } catch (e: FirebaseAuthException) {
-                            if (e.errorCode == "ERROR_EMAIL_ALREADY_IN_USE") {
-                                emailError = "Dit e-mailadres bestaat al"
-                            } else {
-                                generalError = "Registreren mislukt: ${e.message}"
-                            }
-                        } catch (e: Exception) {
-                            generalError = "Registreren mislukt: ${e.message}"
-                        }
-                        isLoading = false
-                    }
-                }
-            },
-            enabled = !isLoading,
+            onClick = { viewModel.register(name, email, password, isMerchant) },
+            enabled = !state.isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (isLoading) {
+            if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     strokeWidth = 2.dp,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Registreren")
+                Text(stringResource(R.string.button_register))
             }
         }
 
@@ -234,7 +168,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             onClick = { (context as ComponentActivity).finish() },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Al een account? Inloggen")
+            Text(stringResource(R.string.link_to_login))
         }
     }
 }
