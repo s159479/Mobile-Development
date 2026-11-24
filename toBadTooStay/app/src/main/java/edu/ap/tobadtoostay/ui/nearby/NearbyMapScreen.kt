@@ -3,6 +3,7 @@ package edu.ap.tobadtoostay.ui.nearby
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,7 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ fun NearbyMapScreen(
     state: NearbyBagsUiState,
     location: MapPoint,
     onRetry: () -> Unit,
+    onBagClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val myPosition = GeoPoint(location.latitude, location.longitude)
@@ -71,7 +73,7 @@ fun NearbyMapScreen(
                 MapMarker(store.id, GeoPoint(store.latitude, store.longitude), store.name)
             }
 
-            var selectedStoreId by remember { mutableStateOf<String?>(null) }
+            var selectedStoreId by rememberSaveable { mutableStateOf<String?>(null) }
             val selectedBags = bagsPerStore[selectedStoreId]
 
             Column(modifier = modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -103,14 +105,21 @@ fun NearbyMapScreen(
                                     selectedBags.size
                                 )
                             )
-                            // The detail screen (K7) is a later task, so this button does nothing yet
-                            Button(
-                                onClick = { },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp)
-                            ) {
-                                Text(stringResource(R.string.map_view_bag))
+                            selectedBags.forEach { nearbyBag ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = nearbyBag.bag.title,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Button(onClick = { onBagClick(nearbyBag.bag.id) }) {
+                                        Text(stringResource(R.string.map_view_bag))
+                                    }
+                                }
                             }
                         }
                     }

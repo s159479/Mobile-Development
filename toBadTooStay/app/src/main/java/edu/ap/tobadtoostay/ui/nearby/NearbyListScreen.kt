@@ -1,5 +1,6 @@
 package edu.ap.tobadtoostay.ui.nearby
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import edu.ap.tobadtoostay.R
 import edu.ap.tobadtoostay.data.model.NearbyBag
@@ -29,6 +31,7 @@ import java.util.Locale
 fun NearbyListScreen(
     state: NearbyBagsUiState,
     onRetry: () -> Unit,
+    onBagClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     when (state) {
@@ -59,7 +62,7 @@ fun NearbyListScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(state.bags, key = { it.bag.id }) { nearbyBag ->
-                        BagCard(nearbyBag)
+                        BagCard(nearbyBag, onClick = { onBagClick(nearbyBag.bag.id) })
                     }
                 }
             }
@@ -84,12 +87,12 @@ fun NearbyListScreen(
     }
 }
 
-// TODO (when Jasper adds the fields to Bag): small photo and the original price (struck through)
+// TODO small photo
 @Composable
-private fun BagCard(nearbyBag: NearbyBag) {
+private fun BagCard(nearbyBag: NearbyBag, onClick: () -> Unit) {
     val bag = nearbyBag.bag
 
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = bag.title,
@@ -117,11 +120,20 @@ private fun BagCard(nearbyBag: NearbyBag) {
                     .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = stringResource(R.string.bag_price, bag.price),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(R.string.bag_price, bag.price),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (bag.originalValue > bag.price) {
+                        Text(
+                            text = stringResource(R.string.bag_original_value, bag.originalValue),
+                            style = MaterialTheme.typography.bodySmall,
+                            textDecoration = TextDecoration.LineThrough
+                        )
+                    }
+                }
                 Text(stringResource(R.string.bag_left, bag.quantityLeft))
                 Text(stringResource(R.string.bag_distance, nearbyBag.distanceMeters / 1000))
             }
@@ -130,5 +142,5 @@ private fun BagCard(nearbyBag: NearbyBag) {
 }
 
 /** 17:30 */
-private fun formatTime(millis: Long): String =
+internal fun formatTime(millis: Long): String =
     SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(millis))

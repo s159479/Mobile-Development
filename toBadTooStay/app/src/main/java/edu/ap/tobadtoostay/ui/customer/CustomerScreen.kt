@@ -29,12 +29,17 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import edu.ap.tobadtoostay.R
 import edu.ap.tobadtoostay.ui.BackArrow
+import edu.ap.tobadtoostay.ui.detail.BagDetailScreen
+import edu.ap.tobadtoostay.ui.detail.ReservationViewModel
 import edu.ap.tobadtoostay.ui.location.LocationCard
 import edu.ap.tobadtoostay.ui.location.LocationUiState
 import edu.ap.tobadtoostay.ui.location.LocationViewModel
+import edu.ap.tobadtoostay.ui.nearby.NearbyBagsUiState
 import edu.ap.tobadtoostay.ui.nearby.NearbyListScreen
 import edu.ap.tobadtoostay.ui.nearby.NearbyLiveViewModel
 import edu.ap.tobadtoostay.ui.nearby.NearbyMapScreen
+
+private const val DETAIL_ROUTE = "detail/{bagId}"
 
 /** The four tabs of the customer: route, text and icon. */
 private enum class CustomerTab(val route: String, val label: Int, val icon: ImageVector) {
@@ -59,6 +64,8 @@ fun CustomerScreen(
     val location by locationViewModel.uiState.collectAsStateWithLifecycle()
     val nearbyState by nearbyViewModel.uiState.collectAsStateWithLifecycle()
     val found = location as? LocationUiState.Found
+
+    val openDetail: (String) -> Unit = { bagId -> navController.navigate("detail/$bagId") }
 
     LaunchedEffect(found?.point) {
         if (found != null) nearbyViewModel.load(found.point)
@@ -95,7 +102,11 @@ fun CustomerScreen(
                     if (found == null) {
                         LocationCard(viewModel = locationViewModel)
                     } else {
-                        NearbyListScreen(state = nearbyState, onRetry = nearbyViewModel::retry)
+                        NearbyListScreen(
+                            state = nearbyState,
+                            onRetry = nearbyViewModel::retry,
+                            onBagClick = openDetail
+                        )
                     }
                 }
             }
@@ -108,10 +119,30 @@ fun CustomerScreen(
                         NearbyMapScreen(
                             state = nearbyState,
                             location = found.point,
-                            onRetry = nearbyViewModel::retry
+                            onRetry = nearbyViewModel::retry,
+                            onBagClick = openDetail
                         )
                     }
                 }
+            }
+            composable(DETAIL_ROUTE) { entry ->
+                val bagId = entry.arguments?.getString("bagId")
+                val nearbyBag = (nearbyState as? NearbyBagsUiState.Loaded)
+                    ?.bags?.firstOrNull { it.bag.id == bagId }
+                // own ViewModel per detail screen, so every bag starts without a reservation
+                val reservationViewModel: ReservationViewModel = viewModel()
+                val reservationState by reservationViewModel.uiState.collectAsStateWithLifecycle()
+
+                BagDetailScreen(
+                    nearbyBag = nearbyBag,
+                    isLoading = nearbyState is NearbyBagsUiState.Loading ||
+                        nearbyState is NearbyBagsUiState.WaitingForLocation,
+                    reservationState = reservationState,
+                    onReserve = { quantity ->
+                        if (nearbyBag != null) reservationViewModel.reserve(nearbyBag, quantity)
+                    },
+                    onBack = { navController.popBackStack() }
+                )
             }
             composable(CustomerTab.ORDERS.route) {
                 Column(modifier = Modifier.padding(16.dp)) {
