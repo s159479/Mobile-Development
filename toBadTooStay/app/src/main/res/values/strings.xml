@@ -78,6 +78,41 @@
     </plurals>
     <string name="map_tap_marker">Tik op een marker om de winkel te zien.</string>
 
+    <!-- Bag detail and reserving -->
+    <string name="detail_no_photo">Geen foto</string>
+    <string name="detail_not_available">Dit pakket is niet meer beschikbaar.</string>
+    <string name="detail_reserve">Reserveer</string>
+    <string name="detail_minus">-</string>
+    <string name="detail_plus">+</string>
+    <string name="reserve_success">Gereserveerd: %1$d× pakket</string>
+    <string name="reserve_show_code">Toon deze ophaalcode in de winkel.</string>
+    <string name="reserve_error_sold_out">Sorry, er zijn niet genoeg pakketten meer over.</string>
+    <string name="reserve_error_pickup_over">Sorry, de ophaaltijd van dit pakket is al voorbij.</string>
+    <string name="reserve_error_failed">Reserveren mislukt, probeer opnieuw</string>
+
+    <!-- Offer a bag -->
+    <string name="bag_title_new">Nieuw pakket</string>
+    <string name="bag_need_store">Maak eerst je winkel aan voor je een pakket aanbiedt.</string>
+    <string name="bag_field_title">Titel</string>
+    <string name="bag_field_description">Beschrijving</string>
+    <string name="bag_field_price">Prijs (€)</string>
+    <string name="bag_field_original_value">Originele waarde (€)</string>
+    <string name="bag_field_quantity">Aantal pakketten</string>
+    <string name="bag_pickup_today">Ophalen vandaag (uu:mm)</string>
+    <string name="bag_field_from">Van</string>
+    <string name="bag_field_until">Tot</string>
+    <string name="bag_save">Pakket aanbieden</string>
+    <string name="bag_saved">Pakket aangeboden</string>
+    <string name="bag_error_title">Titel is verplicht</string>
+    <string name="bag_error_price">Geef een prijs groter dan 0</string>
+    <string name="bag_error_original_value">Originele waarde moet minstens de prijs zijn</string>
+    <string name="bag_error_quantity">Geef minstens 1 pakket</string>
+    <string name="bag_error_time">Geef een uur zoals 17:30</string>
+    <string name="bag_error_until_before_from">Het einduur moet na het beginuur komen</string>
+    <string name="bag_error_until_past">Het einduur is al voorbij</string>
+    <string name="bag_error_failed">Pakket opslaan mislukt, probeer opnieuw</string>
+    <string name="bag_original_value">€ %1$.2f</string>
+
     <!-- My store (H1, H2) -->
     <string name="my_store">Mijn winkel</string>
     <string name="store_title_new">Winkel aanmaken</string>

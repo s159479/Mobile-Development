@@ -1,6 +1,10 @@
 package edu.ap.tobadtoostay.data.repository
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.GeoPoint
+import edu.ap.tobadtoostay.data.model.Store
+import java.util.Date
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.flow.Flow
@@ -53,12 +57,32 @@ class BagRepository(
         return combine(flows) { lists -> lists.toList().flatten() }
     }
 
+    // storeName and location are copied from the store, so we don't need to ask the store again
+    suspend fun createBag(bag: Bag, store: Store) {
+        val data = hashMapOf(
+            STORE_ID to store.id,
+            "storeName" to store.name,
+            "title" to bag.title,
+            "description" to bag.description,
+            "price" to bag.price,
+            "originalValue" to bag.originalValue,
+            "quantityTotal" to bag.quantityTotal,
+            "quantityLeft" to bag.quantityTotal,
+            "pickupStart" to Timestamp(Date(bag.pickupStart ?: 0L)),
+            "pickupEnd" to Timestamp(Date(bag.pickupEnd ?: 0L)),
+            "location" to GeoPoint(store.latitude, store.longitude),
+            "active" to true
+        )
+        bags.add(data).await()
+    }
+
     private fun DocumentSnapshot.toBag() = Bag(
         id = id,
         storeId = getString(STORE_ID).orEmpty(),
         title = getString("title").orEmpty(),
         description = getString("description").orEmpty(),
         price = getDouble("price") ?: 0.0,
+        originalValue = getDouble("originalValue") ?: 0.0,
         quantityTotal = getLong("quantityTotal")?.toInt() ?: 0,
         quantityLeft = getLong("quantityLeft")?.toInt() ?: 0,
         pickupStart = getTimestamp("pickupStart")?.toDate()?.time,

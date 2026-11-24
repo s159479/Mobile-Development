@@ -39,6 +39,11 @@
             android:exported="false"
             android:label="@string/my_store"
             android:theme="@style/Theme.ToBadTooStay" />
+        <activity
+            android:name=".NewBagActivity"
+            android:exported="false"
+            android:label="@string/bag_title_new"
+            android:theme="@style/Theme.ToBadTooStay" />
     </application>
 
 </manifest>

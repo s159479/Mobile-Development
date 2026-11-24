@@ -121,6 +121,14 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
+                    onClick = { context.startActivity(Intent(context, NewBagActivity::class.java)) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.bag_title_new))
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
                     onClick = logout,
                     modifier = Modifier.fillMaxWidth()
                 ) {

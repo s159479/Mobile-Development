@@ -11,6 +11,7 @@ data class Bag(
     val title: String = "",
     val description: String = "",
     val price: Double = 0.0,
+    val originalValue: Double = 0.0,
     val quantityTotal: Int = 0,
     val quantityLeft: Int = 0,
     val pickupStart: Long? = null,
