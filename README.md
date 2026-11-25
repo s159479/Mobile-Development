@@ -25,9 +25,9 @@ Jonas Schaerlaeken
 | 25/11 | ophaalcode |Jonas|
 | 25/11 | mijn bestellingen |Jasper|
 | 25/11 | favorieten |Jasper|
-| 2/12 | adres automatisch invullen |/|
-| 2/12 | foto toevoegen |/|
-| 2/12 | eigen pakketten |/|
+| 2/12 | adres automatisch invullen |Jasper|
+| 2/12 | foto toevoegen |Jasper|
+| 2/12 | eigen pakketten |Jonas|
 | 9/12 | laatste checkup |/|
 | 9/12 | loading toevoegen |/|
 
