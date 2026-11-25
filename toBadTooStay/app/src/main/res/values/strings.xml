@@ -90,6 +90,22 @@
     <string name="reserve_error_pickup_over">Sorry, de ophaaltijd van dit pakket is al voorbij.</string>
     <string name="reserve_error_failed">Reserveren mislukt, probeer opnieuw</string>
 
+    <!-- My orders (K10) -->
+    <string name="orders_title">Mijn bestellingen</string>
+    <string name="orders_active">Actief</string>
+    <string name="orders_past">Eerdere bestellingen</string>
+    <string name="orders_empty">Je hebt nog geen bestellingen. Reserveer een pakket bij Ontdekken.</string>
+    <string name="orders_active_empty">Geen actieve bestellingen.</string>
+    <string name="orders_loading">Bestellingen laden…</string>
+    <string name="orders_sync_failed">Je bestellingen konden niet bijgewerkt worden. Je ziet de bestellingen die op je toestel bewaard zijn.</string>
+    <string name="orders_offline">Geen verbinding: je ziet de bestellingen die op je toestel bewaard zijn.</string>
+    <string name="orders_quantity">%1$d× pakket</string>
+    <string name="orders_pickup">Ophalen op %1$s: %2$s – %3$s</string>
+    <string name="order_status_reserved">Gereserveerd</string>
+    <string name="order_status_collected">Opgehaald</string>
+    <string name="order_status_cancelled">Geannuleerd</string>
+    <string name="order_status_expired">Niet opgehaald</string>
+
     <!-- Offer a bag -->
     <string name="bag_title_new">Nieuw pakket</string>
     <string name="bag_need_store">Maak eerst je winkel aan voor je een pakket aanbiedt.</string>

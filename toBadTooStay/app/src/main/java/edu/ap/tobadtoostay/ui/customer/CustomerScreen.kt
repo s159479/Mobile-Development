@@ -38,6 +38,8 @@ import edu.ap.tobadtoostay.ui.nearby.NearbyBagsUiState
 import edu.ap.tobadtoostay.ui.nearby.NearbyListScreen
 import edu.ap.tobadtoostay.ui.nearby.NearbyLiveViewModel
 import edu.ap.tobadtoostay.ui.nearby.NearbyMapScreen
+import edu.ap.tobadtoostay.ui.orders.OrdersScreen
+import edu.ap.tobadtoostay.ui.orders.OrdersViewModel
 
 private const val DETAIL_ROUTE = "detail/{bagId}"
 
@@ -54,7 +56,10 @@ private enum class CustomerTab(val route: String, val label: Int, val icon: Imag
 fun CustomerScreen(
     onLogout: () -> Unit,
     locationViewModel: LocationViewModel = viewModel(),
-    nearbyViewModel: NearbyLiveViewModel = viewModel()
+    nearbyViewModel: NearbyLiveViewModel = viewModel(),
+    // created here (it lives as long as MainActivity), so Firestore changes reach Room
+    // while the customer is on any tab, not only on the orders tab
+    ordersViewModel: OrdersViewModel = viewModel()
 ) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -63,6 +68,7 @@ fun CustomerScreen(
     // The location and the bags are shared by the list and the map
     val location by locationViewModel.uiState.collectAsStateWithLifecycle()
     val nearbyState by nearbyViewModel.uiState.collectAsStateWithLifecycle()
+    val ordersState by ordersViewModel.uiState.collectAsStateWithLifecycle()
     val found = location as? LocationUiState.Found
 
     val openDetail: (String) -> Unit = { bagId -> navController.navigate("detail/$bagId") }
@@ -147,7 +153,7 @@ fun CustomerScreen(
             composable(CustomerTab.ORDERS.route) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     BackArrow(onClick = { navController.popBackStack() })
-                    Text(stringResource(R.string.coming_soon))
+                    OrdersScreen(state = ordersState)
                 }
             }
             composable(CustomerTab.FAVORITES.route) {
