@@ -22,9 +22,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import edu.ap.tobadtoostay.R
 import edu.ap.tobadtoostay.data.model.NearbyBag
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import edu.ap.tobadtoostay.ui.formatTime
 
 /** List of the bags near the customer, the closest first (K3). */
 @Composable
@@ -140,7 +138,3 @@ private fun BagCard(nearbyBag: NearbyBag, onClick: () -> Unit) {
         }
     }
 }
-
-/** 17:30 */
-internal fun formatTime(millis: Long): String =
-    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(millis))

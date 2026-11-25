@@ -31,7 +31,8 @@ import edu.ap.tobadtoostay.R
 import edu.ap.tobadtoostay.data.model.NearbyBag
 import edu.ap.tobadtoostay.ui.BackArrow
 import edu.ap.tobadtoostay.ui.map.OsmMap
-import edu.ap.tobadtoostay.ui.nearby.formatTime
+import edu.ap.tobadtoostay.ui.PickupCode
+import edu.ap.tobadtoostay.ui.formatTime
 import org.osmdroid.util.GeoPoint
 
 @Composable
@@ -205,12 +206,7 @@ private fun PickupCodeCard(state: ReservationUiState.Success) {
                 text = stringResource(R.string.reserve_success, state.quantity),
                 style = MaterialTheme.typography.titleMedium
             )
-            Text(
-                text = state.pickupCode,
-                style = MaterialTheme.typography.displayMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+            PickupCode(state.pickupCode, modifier = Modifier.padding(vertical = 8.dp))
             Text(stringResource(R.string.reserve_show_code))
         }
     }

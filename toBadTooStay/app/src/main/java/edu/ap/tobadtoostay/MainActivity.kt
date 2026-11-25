@@ -58,10 +58,11 @@ fun HomeScreen(
 
     // Back to the login screen and remove the other screens from the back stack
     val logout = {
-        viewModel.logout()
-        val intent = Intent(context, LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        context.startActivity(intent)
+        viewModel.logout {
+            val intent = Intent(context, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            context.startActivity(intent)
+        }
     }
 
     when (val current = state) {
