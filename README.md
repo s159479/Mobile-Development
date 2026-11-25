@@ -200,3 +200,18 @@ Jonas Schaerlaeken
     - eerst een winkel aanmaken, anders een melding
     - extra velden in bags/{bagId}: originalValue, storeName, location, active
     - foto komt later bij "foto toevoegen"
+
+#### mijn bestellingen
+- afhankelijk
+    - reserveren
+    - ophaalcode
+    - room klaarzetten
+
+- doel
+    - tabblad Bestellingen toont de actieve en eerdere reservaties van de klant
+    - actief: nog op te halen, met de ophaalcode groot erbij, eerstvolgende ophaling bovenaan
+    - eerder: opgehaald, geannuleerd of niet opgehaald (ophaalvenster voorbij), nieuwste bovenaan
+    - per bestelling: titel, winkel, aantal, ophaaldag en ophaalvenster en status
+    - elke wijziging in Firestore wordt naar Room geschreven (CachedReservation), het scherm leest enkel uit Room zodat het ook offline werkt
+    - zonder internet een melding dat je de bewaarde bestellingen ziet
+    - bij uitloggen worden de bewaarde bestellingen van de gsm gewist
