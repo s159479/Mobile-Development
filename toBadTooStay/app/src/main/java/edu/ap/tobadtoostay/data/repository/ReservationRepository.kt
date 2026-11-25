@@ -5,6 +5,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import edu.ap.tobadtoostay.data.model.NearbyBag
+import edu.ap.tobadtoostay.data.model.ReservationStatus
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 
@@ -42,7 +43,7 @@ class ReservationRepository(
                     "customerId" to uid,
                     "quantity" to quantity,
                     "pickupCode" to pickupCode,
-                    "status" to "reserved",
+                    "status" to ReservationStatus.RESERVED,
                     "createdAt" to Timestamp.now(),
                     "bagTitle" to bag.title,
                     "storeName" to nearbyBag.store.name,
