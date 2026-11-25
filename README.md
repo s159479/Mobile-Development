@@ -27,7 +27,7 @@ Jonas Schaerlaeken
 | 25/11 | favorieten |Jasper|
 | 2/12 | adres automatisch invullen |/|
 | 2/12 | foto toevoegen |/|
-| 9/12 | eigen pakketten |/|
+| 2/12 | eigen pakketten |/|
 | 9/12 | laatste checkup |/|
 | 9/12 | loading toevoegen |/|
 
