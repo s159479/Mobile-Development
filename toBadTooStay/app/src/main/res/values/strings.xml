@@ -65,7 +65,6 @@
     <string name="logout">Uitloggen</string>
     <string name="back">Terug</string>
     <string name="role_error">Je profiel kon niet geladen worden.</string>
-    <string name="coming_soon">Dit scherm komt binnenkort.</string>
     <string name="bag_price">€ %1$.2f</string>
     <string name="bag_left">%1$d over</string>
     <string name="bag_pickup">Ophalen: %1$s – %2$s</string>
@@ -105,6 +104,15 @@
     <string name="order_status_collected">Opgehaald</string>
     <string name="order_status_cancelled">Geannuleerd</string>
     <string name="order_status_expired">Niet opgehaald</string>
+
+    <!-- Favorites (K12) -->
+    <string name="favorites_title">Mijn favoriete winkels</string>
+    <string name="favorites_loading">Favorieten laden…</string>
+    <string name="favorites_empty">Je hebt nog geen favorieten. Tik op het hartje bij een pakket om de winkel te bewaren.</string>
+    <string name="favorites_removed">%1$s verwijderd uit favorieten</string>
+    <string name="favorites_undo">Ongedaan maken</string>
+    <string name="favorite_add">%1$s toevoegen aan favorieten</string>
+    <string name="favorite_remove">%1$s verwijderen uit favorieten</string>
 
     <!-- Offer a bag -->
     <string name="bag_title_new">Nieuw pakket</string>

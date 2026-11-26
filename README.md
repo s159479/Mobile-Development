@@ -127,7 +127,7 @@ Jonas Schaerlaeken
     - de lijst wordt realtime bijgewerkt: reserveert iemand het laatste pakket, dan verdwijnt het meteen
     - toon een laadindicator tijdens het ophalen en een melding als er geen pakketten zijn
     - toon foutmelding zonder internet, met een knop om opnieuw te proberen
-    - bestellingen en favorieten zijn voorlopig nog leeg ("komt binnenkort")
+    - de tabbladen Bestellingen en Favorieten zijn uitgewerkt bij "mijn bestellingen" en "favorieten"
 
 #### kaartweergave voor klant
 - afhankelijk
@@ -214,4 +214,21 @@ Jonas Schaerlaeken
     - per bestelling: titel, winkel, aantal, ophaaldag en ophaalvenster en status
     - elke wijziging in Firestore wordt naar Room geschreven (CachedReservation), het scherm leest enkel uit Room zodat het ook offline werkt
     - zonder internet een melding dat je de bewaarde bestellingen ziet
-    - bij uitloggen worden de bewaarde bestellingen van de gsm gewist
+    - bij uitloggen blijven de bewaarde bestellingen op de gsm; elke rij heeft de customerId, dus na opnieuw inloggen zie je enkel je eigen bestellingen terug
+    - bestellingen van andere accounts op dezelfde gsm worden 30 dagen na het ophaalvenster gewist, zodat oude ophaalcodes niet blijven staan
+
+#### favorieten
+- afhankelijk
+    - lijstweergave voor klant
+    - detailscherm
+    - room klaarzetten
+
+- doel
+    - klant markeert een winkel als favoriet met een hartje, in de lijst en op het detailscherm
+    - nogmaals tikken haalt de winkel uit de favorieten
+    - tabblad Favorieten toont de favoriete winkels (naam en adres), laatst toegevoegd bovenaan
+    - favorieten worden enkel lokaal bewaard in Room (FavoriteStore), met de customerId erbij
+    - de sleutel is (customerId, storeId) in plaats van enkel storeId zoals in de opgave: zo kan elk account dezelfde winkel als favoriet hebben
+    - na uitloggen en opnieuw inloggen zie je je eigen favorieten terug, een ander account op dezelfde gsm ziet ze niet
+    - verwijderen uit het tabblad toont een melding met "Ongedaan maken"
+    - beperking: naam en adres worden bewaard op het moment van het hartje en niet bijgewerkt als de winkel ze later aanpast

@@ -29,7 +29,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import edu.ap.tobadtoostay.R
 import edu.ap.tobadtoostay.data.model.NearbyBag
+import edu.ap.tobadtoostay.data.model.Store
 import edu.ap.tobadtoostay.ui.BackArrow
+import edu.ap.tobadtoostay.ui.FavoriteButton
 import edu.ap.tobadtoostay.ui.map.OsmMap
 import edu.ap.tobadtoostay.ui.PickupCode
 import edu.ap.tobadtoostay.ui.formatTime
@@ -42,6 +44,8 @@ fun BagDetailScreen(
     reservationState: ReservationUiState,
     onReserve: (Int) -> Unit,
     onBack: () -> Unit,
+    isFavorite: Boolean,
+    onFavoriteChange: (Store, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -64,7 +68,11 @@ fun BagDetailScreen(
                 Text(stringResource(R.string.detail_not_available))
             }
         } else {
-            BagInfo(nearbyBag)
+            BagInfo(
+                nearbyBag = nearbyBag,
+                isFavorite = isFavorite,
+                onFavoriteChange = { favorite -> onFavoriteChange(nearbyBag.store, favorite) }
+            )
             if (reservationState !is ReservationUiState.Success) {
                 ReserveSection(nearbyBag.bag.quantityLeft, reservationState, onReserve)
             }
@@ -73,7 +81,7 @@ fun BagDetailScreen(
 }
 
 @Composable
-private fun BagInfo(nearbyBag: NearbyBag) {
+private fun BagInfo(nearbyBag: NearbyBag, isFavorite: Boolean, onFavoriteChange: (Boolean) -> Unit) {
     val bag = nearbyBag.bag
     val store = nearbyBag.store
     val storePosition = GeoPoint(store.latitude, store.longitude)
@@ -92,7 +100,18 @@ private fun BagInfo(nearbyBag: NearbyBag) {
     }
 
     Text(text = bag.title, style = MaterialTheme.typography.headlineSmall)
-    Text(text = store.name, style = MaterialTheme.typography.titleMedium)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = store.name,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f)
+        )
+        FavoriteButton(
+            isFavorite = isFavorite,
+            storeName = store.name,
+            onFavoriteChange = onFavoriteChange
+        )
+    }
     Text(text = store.address, style = MaterialTheme.typography.bodyMedium)
 
     if (bag.description.isNotBlank()) {

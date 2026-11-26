@@ -8,6 +8,7 @@ import edu.ap.tobadtoostay.data.local.AppDatabase
 import edu.ap.tobadtoostay.data.model.Order
 import edu.ap.tobadtoostay.data.model.Orders
 import edu.ap.tobadtoostay.data.repository.OrdersRepository
+import edu.ap.tobadtoostay.data.repository.UserRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -50,7 +51,7 @@ class OrdersViewModel(application: Application) : AndroidViewModel(application) 
 
     // Fixed for the life of this ViewModel: logging out closes MainActivity (CLEAR_TASK),
     // so the next user always gets a new ViewModel.
-    private val customerId = repository.currentCustomerId().orEmpty()
+    private val customerId = UserRepository().currentUserId().orEmpty()
 
     private val syncStatus = MutableStateFlow(SyncStatus.UP_TO_DATE)
 
@@ -69,7 +70,10 @@ class OrdersViewModel(application: Application) : AndroidViewModel(application) 
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), OrdersUiState.Loading)
 
     init {
-        if (customerId.isNotEmpty()) startSync()
+        if (customerId.isNotEmpty()) {
+            viewModelScope.launch { repository.removeOldOrdersOfOthers(customerId) }
+            startSync()
+        }
     }
 
     private fun startSync() {

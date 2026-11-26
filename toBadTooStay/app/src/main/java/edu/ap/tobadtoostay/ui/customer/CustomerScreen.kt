@@ -12,11 +12,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -31,6 +34,8 @@ import edu.ap.tobadtoostay.R
 import edu.ap.tobadtoostay.ui.BackArrow
 import edu.ap.tobadtoostay.ui.detail.BagDetailScreen
 import edu.ap.tobadtoostay.ui.detail.ReservationViewModel
+import edu.ap.tobadtoostay.ui.favorites.FavoritesScreen
+import edu.ap.tobadtoostay.ui.favorites.FavoritesViewModel
 import edu.ap.tobadtoostay.ui.location.LocationCard
 import edu.ap.tobadtoostay.ui.location.LocationUiState
 import edu.ap.tobadtoostay.ui.location.LocationViewModel
@@ -59,9 +64,11 @@ fun CustomerScreen(
     nearbyViewModel: NearbyLiveViewModel = viewModel(),
     // created here (it lives as long as MainActivity), so Firestore changes reach Room
     // while the customer is on any tab, not only on the orders tab
-    ordersViewModel: OrdersViewModel = viewModel()
+    ordersViewModel: OrdersViewModel = viewModel(),
+    favoritesViewModel: FavoritesViewModel = viewModel()
 ) {
     val navController = rememberNavController()
+    val snackbarHostState = remember { SnackbarHostState() }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
@@ -69,6 +76,7 @@ fun CustomerScreen(
     val location by locationViewModel.uiState.collectAsStateWithLifecycle()
     val nearbyState by nearbyViewModel.uiState.collectAsStateWithLifecycle()
     val ordersState by ordersViewModel.uiState.collectAsStateWithLifecycle()
+    val favoriteIds by favoritesViewModel.favoriteIds.collectAsStateWithLifecycle()
     val found = location as? LocationUiState.Found
 
     val openDetail: (String) -> Unit = { bagId -> navController.navigate("detail/$bagId") }
@@ -79,6 +87,7 @@ fun CustomerScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             NavigationBar {
                 CustomerTab.entries.forEach { tab ->
@@ -111,7 +120,9 @@ fun CustomerScreen(
                         NearbyListScreen(
                             state = nearbyState,
                             onRetry = nearbyViewModel::retry,
-                            onBagClick = openDetail
+                            onBagClick = openDetail,
+                            favoriteIds = favoriteIds,
+                            onFavoriteChange = favoritesViewModel::setFavorite
                         )
                     }
                 }
@@ -147,7 +158,9 @@ fun CustomerScreen(
                     onReserve = { quantity ->
                         if (nearbyBag != null) reservationViewModel.reserve(nearbyBag, quantity)
                     },
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    isFavorite = nearbyBag?.store?.id in favoriteIds,
+                    onFavoriteChange = favoritesViewModel::setFavorite
                 )
             }
             composable(CustomerTab.ORDERS.route) {
@@ -157,9 +170,15 @@ fun CustomerScreen(
                 }
             }
             composable(CustomerTab.FAVORITES.route) {
+                val favoritesState by favoritesViewModel.uiState.collectAsStateWithLifecycle()
                 Column(modifier = Modifier.padding(16.dp)) {
                     BackArrow(onClick = { navController.popBackStack() })
-                    Text(stringResource(R.string.coming_soon))
+                    FavoritesScreen(
+                        state = favoritesState,
+                        snackbarHostState = snackbarHostState,
+                        onRemove = favoritesViewModel::remove,
+                        onUndoRemove = favoritesViewModel::restore
+                    )
                 }
             }
         }
