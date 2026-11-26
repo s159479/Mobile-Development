@@ -22,6 +22,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import edu.ap.tobadtoostay.R
 import edu.ap.tobadtoostay.data.model.NearbyBag
+import edu.ap.tobadtoostay.data.model.Store
+import edu.ap.tobadtoostay.ui.FavoriteButton
 import edu.ap.tobadtoostay.ui.formatTime
 
 /** List of the bags near the customer, the closest first (K3). */
@@ -30,6 +32,8 @@ fun NearbyListScreen(
     state: NearbyBagsUiState,
     onRetry: () -> Unit,
     onBagClick: (String) -> Unit,
+    favoriteIds: Set<String>,
+    onFavoriteChange: (Store, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     when (state) {
@@ -60,7 +64,12 @@ fun NearbyListScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(state.bags, key = { it.bag.id }) { nearbyBag ->
-                        BagCard(nearbyBag, onClick = { onBagClick(nearbyBag.bag.id) })
+                        BagCard(
+                            nearbyBag = nearbyBag,
+                            isFavorite = nearbyBag.store.id in favoriteIds,
+                            onClick = { onBagClick(nearbyBag.bag.id) },
+                            onFavoriteChange = { favorite -> onFavoriteChange(nearbyBag.store, favorite) }
+                        )
                     }
                 }
             }
@@ -87,19 +96,33 @@ fun NearbyListScreen(
 
 // TODO small photo
 @Composable
-private fun BagCard(nearbyBag: NearbyBag, onClick: () -> Unit) {
+private fun BagCard(
+    nearbyBag: NearbyBag,
+    isFavorite: Boolean,
+    onClick: () -> Unit,
+    onFavoriteChange: (Boolean) -> Unit
+) {
     val bag = nearbyBag.bag
 
     Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = bag.title,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text = nearbyBag.store.name,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = bag.title,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = nearbyBag.store.name,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                FavoriteButton(
+                    isFavorite = isFavorite,
+                    storeName = nearbyBag.store.name,
+                    onFavoriteChange = onFavoriteChange
+                )
+            }
 
             if (bag.pickupStart != null && bag.pickupEnd != null) {
                 Text(
