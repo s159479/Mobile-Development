@@ -1,6 +1,5 @@
 package edu.ap.tobadtoostay.data.repository
 
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.MetadataChanges
@@ -14,15 +13,13 @@ import kotlinx.coroutines.flow.map
 /**
  * Orders of the customer (K10). Firestore is the source, Room is the copy the screen reads,
  * so the orders are also there without internet.
+ * Every row has the uid of the customer, so the orders stay after logout
+ * and another account on the same phone does not see them.
  */
 class OrdersRepository(
     private val dao: CachedReservationDao,
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
-
-    /** uid of the logged in customer, or null when nobody is logged in. */
-    fun currentCustomerId(): String? = auth.currentUser?.uid
 
     /** The orders saved on this phone. The screen only reads this. */
     fun observeCached(customerId: String): Flow<List<CachedReservation>> =
@@ -46,10 +43,8 @@ class OrdersRepository(
                 val offline = snapshot.metadata.isFromCache
                 // documentChanges leaves out snapshots where only the metadata changed
                 val changed = snapshot.documentChanges.isNotEmpty() || previousWasOffline
-                // after logout nothing may be written anymore
-                val stillLoggedIn = currentCustomerId() == customerId
 
-                if (!offline && changed && stillLoggedIn) {
+                if (!offline && changed) {
                     dao.replaceForCustomer(customerId, snapshot.documents.map { it.toCached() })
                 }
                 previousWasOffline = offline
@@ -57,9 +52,13 @@ class OrdersRepository(
             }
     }
 
-    /** Removes all saved orders from the phone (at logout). */
-    suspend fun clearCache() {
-        dao.deleteAll()
+    /**
+     * Removes the orders of other accounts whose pickup ended more than [KEEP_DAYS] days ago,
+     * so old pickup codes do not stay on a shared phone forever.
+     * The orders of [customerId] are left alone: they come back from Firestore anyway.
+     */
+    suspend fun removeOldOrdersOfOthers(customerId: String, now: Long = System.currentTimeMillis()) {
+        dao.deleteOthersEndedBefore(customerId, now - KEEP_DAYS * DAY_MS)
     }
 
     private fun DocumentSnapshot.toCached() = CachedReservation(
@@ -78,5 +77,7 @@ class OrdersRepository(
     private companion object {
         const val RESERVATIONS = "reservations"
         const val CUSTOMER_ID = "customerId"
+        const val KEEP_DAYS = 30L
+        const val DAY_MS = 24 * 60 * 60 * 1000L
     }
 }

@@ -20,9 +20,9 @@ interface CachedReservationDao {
     @Query("DELETE FROM cached_reservations WHERE customerId = :customerId")
     suspend fun deleteForCustomer(customerId: String)
 
-    /** Used at logout, so no pickup codes stay on the phone. */
-    @Query("DELETE FROM cached_reservations")
-    suspend fun deleteAll()
+    /** Removes old orders of the other accounts that used this phone. */
+    @Query("DELETE FROM cached_reservations WHERE customerId != :customerId AND pickupEnd < :before")
+    suspend fun deleteOthersEndedBefore(customerId: String, before: Long)
 
     /** Replaces the cache of one customer with the latest Firestore snapshot in one transaction. */
     @Transaction
